@@ -3,19 +3,17 @@ import agent from "../../agent";
 import logo from "../../imgs/logo.png";
 
 const Banner = (props) => {
-
   const handleSearchEntry = (ev) => {
-    ev.preventDefault()
-    let title = ev.target.value
-    if(title.length >= 3){
+    ev.preventDefault();
+    let title = ev.target.value;
+    if (title.length >= 3) {
       props.onSearchTitle(
         title,
         (page) => agent.Items.byTitle(title, page),
         agent.Items.byTitle(title)
-      )
+      );
     }
-  }
-
+  };
 
   return (
     <div className="banner text-white">
@@ -23,7 +21,7 @@ const Banner = (props) => {
         <img src={logo} alt="banner" />
         <div>
           <span id="get-part">A place to get</span>
-          <input onChange={handleSearchEntry}></input>
+          <input id="search-box" onChange={handleSearchEntry}></input>
           <span> the cool stuff.</span>
         </div>
       </div>
