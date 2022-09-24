@@ -13,6 +13,13 @@ const Banner = (props) => {
         agent.Items.byTitle(title)
       );
     }
+    else {
+      props.onSearchTitle(
+        '',
+        (page) => agent.Items.byTitle('', page),
+        agent.Items.byTitle('')
+      );
+    }
   };
 
   return (
