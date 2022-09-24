@@ -33,9 +33,11 @@ const Banner = (props) => {
           <span id="get-part">
             A place to <span onClick={showSearch}>get</span>
           </span>
-          {props.searchActive && (
-            <input id="search-box" onChange={handleSearchEntry}></input>
-          )}
+          <input
+            hidden={!props.searchActive}
+            id="search-box"
+            onChange={handleSearchEntry}
+          ></input>
           <span> the cool stuff.</span>
         </div>
       </div>
