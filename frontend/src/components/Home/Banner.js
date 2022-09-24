@@ -30,14 +30,12 @@ const Banner = (props) => {
       <div className="container p-4 text-center">
         <img src={logo} alt="banner" />
         <div>
-          <span id="get-part">
-            A place to <span onClick={showSearch}>get</span>
+          <span onClick={showSearch} id="get-part">
+            A place to get
           </span>
-          <input
-            hidden={!props.searchActive}
-            id="search-box"
-            onChange={handleSearchEntry}
-          ></input>
+          {props.searchActive && (
+            <input id="search-box" onChange={handleSearchEntry}></input>
+          )}
           <span> the cool stuff.</span>
         </div>
       </div>
