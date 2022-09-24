@@ -12,12 +12,11 @@ const Banner = (props) => {
         (page) => agent.Items.byTitle(title, page),
         agent.Items.byTitle(title)
       );
-    }
-    else {
+    } else {
       props.onSearchTitle(
-        '',
-        (page) => agent.Items.byTitle('', page),
-        agent.Items.byTitle('')
+        "",
+        (page) => agent.Items.byTitle("", page),
+        agent.Items.byTitle("")
       );
     }
   };
