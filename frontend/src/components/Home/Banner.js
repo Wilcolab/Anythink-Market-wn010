@@ -21,21 +21,13 @@ const Banner = (props) => {
     }
   };
 
-  const showSearch = (ev) => {
-    props.onShowSearch();
-  };
-
   return (
     <div className="banner text-white">
       <div className="container p-4 text-center">
         <img src={logo} alt="banner" />
         <div>
-          <span id="get-part">
-            A place to <span onClick={showSearch}>get</span>
-          </span>
-          {props.searchActive && (
-            <input id="search-box" onChange={handleSearchEntry}></input>
-          )}
+          <span id="get-part">A place to get</span>
+          <input id="search-box" onChange={handleSearchEntry}></input>
           <span> the cool stuff.</span>
         </div>
       </div>
