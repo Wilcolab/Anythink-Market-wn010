@@ -205,12 +205,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         items_rows = await self.connection.fetch(query.get_sql(), *query_params)
 
         return [
-            await self._get_item_from_db_record(
-                item_row=item_row,
-                slug=item_row[SLUG_ALIAS],
-                seller_username=item_row[SELLER_USERNAME_ALIAS],
-                requested_user=requested_user,
-            )
+            await self.get_item_by_slug(slug=item_row['slug'], requested_user=requested_user)
             for item_row in items_rows
         ]
 
