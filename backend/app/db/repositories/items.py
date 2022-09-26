@@ -106,7 +106,7 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         tag: Optional[str] = None,
         seller: Optional[str] = None,
         favorited: Optional[str] = None,
-        limit: int = 20,
+        limit: int = 10,
         offset: int = 0,
         requested_user: Optional[User] = None,
     ) -> List[Item]:
@@ -297,16 +297,11 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         seller_username: str,
         requested_user: Optional[User],
     ) -> Item:
-        title_query = Query.from_(items).select(items.title).where(items.slug == slug)
-        result_rows = await self.connection.fetch(title_query.get_sql())
-        if not len(result_rows):
-            raise Exception(f'No item with slug {slug}')
-        title = result_rows[0]['title']
 
         return Item(
             id_=item_row["id"],
             slug=slug,
-            title=title,
+            title=item_row["title"],
             description=item_row["description"],
             body=item_row["body"],
             image=item_row["image"],
