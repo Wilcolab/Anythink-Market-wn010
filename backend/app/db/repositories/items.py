@@ -1,7 +1,7 @@
 from typing import List, Optional, Sequence, Union
 
 from asyncpg import Connection, Record
-from pypika import Query
+from pypika import Query, functions as fn, CustomFunction, Table
 
 from app.db.errors import EntityDoesNotExist
 from app.db.queries.queries import queries
@@ -12,17 +12,27 @@ from app.db.queries.tables import (
     favorites,
     tags as tags_table,
     users,
+    followers_to_following,
 )
 from app.db.repositories.base import BaseRepository
 from app.db.repositories.profiles import ProfilesRepository
 from app.db.repositories.tags import TagsRepository
 from app.models.domain.items import Item
 from app.models.domain.users import User
+from app.models.domain.profiles import Profile
+
+import json
 
 SELLER_USERNAME_ALIAS = "seller_username"
 SLUG_ALIAS = "slug"
 
 CAMEL_OR_SNAKE_CASE_TO_WORDS = r"^[a-z\d_\-]+|[A-Z\d_\-][^A-Z\d_\-]*"
+
+# custom functions for pypika
+json_agg = CustomFunction('json_agg', ['value'])
+jsonb_build_object = CustomFunction(
+    'jsonb_build_object', [str(i) for i in range(8)]
+)
 
 
 class ItemsRepository(BaseRepository):  # noqa: WPS214
@@ -113,6 +123,9 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
         query_params: List[Union[str, int]] = []
         query_params_count = 0
 
+        seller_user = users.as_('sellers')
+        following = users.as_('following')
+
         # fmt: off
         query = Query.from_(
             items,
@@ -134,6 +147,64 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
             ).as_(
                 SELLER_USERNAME_ALIAS,
             ),
+            Query.from_(
+                favorites
+            ).where(
+                favorites.item_id == items.id
+            ).select(
+                fn.Count(favorites.item_id)
+            ).as_(
+                'favorites_count'
+            ),
+            Query.from_(
+                favorites
+            ).join(
+                users
+            ).on(
+                (favorites.user_id == users.id) &
+                (users.username == requested_user)
+            ).select(
+                fn.Count(favorites.item_id) > 0
+            ).as_(
+                'favorited'
+            ),
+            Query.from_(
+                items_to_tags
+            ).where(
+                items_to_tags.item_id == items.id
+            ).select(
+                json_agg(items_to_tags.tag)
+            ).as_(
+                'tagList'
+            ),
+            Query.from_(
+                seller_user
+            ).where(
+                items.seller_id == seller_user.id
+            ).select(
+                jsonb_build_object(
+                    'username', seller_user.username,
+                    'bio', seller_user.bio,
+                    'image', seller_user.image,
+                    'following', (
+                        Query.from_(
+                            followers_to_following
+                        ).join(
+                            following
+                        ).on(
+                            following.id == followers_to_following.follower_id
+                        ).where(
+                            following.username == requested_user
+                        ).select(
+                            fn.Count(following.id) > 0
+                        ).as_(
+                            'following'
+                        )
+                    )
+                )
+            ).as_(
+                'seller'
+            )
         )
         # fmt: on
 
@@ -204,8 +275,30 @@ class ItemsRepository(BaseRepository):  # noqa: WPS214
 
         items_rows = await self.connection.fetch(query.get_sql(), *query_params)
 
+        def item_for_row(item_row):
+            seller = json.loads(item_row['seller'])
+            return Item(
+                id_=item_row["id"],
+                slug=item_row["slug"],
+                title=item_row["title"],
+                description=item_row["description"],
+                body=item_row["body"],
+                image=item_row["image"],
+                seller=Profile(
+                    username=seller["username"],
+                    bio=seller["bio"],
+                    image=seller["image"],
+                    following=seller["following"],
+                ),
+                tags=json.loads(item_row["tagList"]) if item_row["tagList"] else [],
+                favorites_count=item_row["favorites_count"],
+                favorited=item_row["favorited"],
+                created_at=item_row["created_at"],
+                updated_at=item_row["updated_at"],
+            )
+
         return [
-            await self.get_item_by_slug(slug=item_row['slug'], requested_user=requested_user)
+            item_for_row(item_row)
             for item_row in items_rows
         ]
 

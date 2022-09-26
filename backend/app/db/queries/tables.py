@@ -33,6 +33,7 @@ class Users(TypedTable):
 
     id: int
     username: str
+    image: str
 
 
 class Items(TypedTable):
@@ -68,8 +69,16 @@ class Favorites(TypedTable):
     user_id: int
 
 
+class FollowersToFollowing(TypedTable):
+    __table__ = "followers_to_followings"
+
+    follower_id: int
+    following_id: int
+
+
 users = Users()
 items = Items()
 tags = Tags()
 items_to_tags = ItemsToTags()
 favorites = Favorites()
+followers_to_following = FollowersToFollowing()
