@@ -15,6 +15,7 @@ class User(RWModel):
 class UserInDB(IDModelMixin, DateTimeModelMixin, User):
     salt: str = ""
     hashed_password: str = ""
+    is_verified: bool
 
     def check_password(self, password: str) -> bool:
         return security.verify_password(self.salt + password, self.hashed_password)
