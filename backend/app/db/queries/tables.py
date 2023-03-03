@@ -33,6 +33,7 @@ class Users(TypedTable):
 
     id: int
     username: str
+    is_verified: bool
 
 
 class Items(TypedTable):
