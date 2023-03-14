@@ -7,8 +7,7 @@ SELECT id,
        bio,
        image,
        created_at,
-       updated_at,
-       is_verified
+       updated_at
 FROM users
 WHERE email = :email
 LIMIT 1;
@@ -23,8 +22,7 @@ SELECT id,
        bio,
        image,
        created_at,
-       updated_at,
-       is_verified
+       updated_at
 FROM users
 WHERE username = :username
 LIMIT 1;
